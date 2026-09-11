@@ -9,16 +9,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    - name: Build APK with Buildozer
-      uses: digreatbrian/buildozer-action@v2
+    - name: Set up Java
+      uses: actions/setup-java@v4
       with:
-        python-version: 3.8
-        buildozer-cmd: buildozer -v android debug
+        distribution: 'zulu'
+        java-version: '17'
 
-    - name: Upload built APK
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Buildozer dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config \
+          zlib1g-dev libffi-dev libssl-dev cmake ccache libncurses5 libstdc++6 \
+          libglu1-mesa libpulse0 libasound2
+
+    - name: Install Buildozer and Cython
+      run: |
+        pip install --upgrade pip
+        pip install --upgrade buildozer cython==0.29.36
+
+    - name: Build with Buildozer
+      run: |
+        buildozer -v android debug
+
+    - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: android-apk
-        path: ./bin/*.apk
+        path: bin/*.apk
