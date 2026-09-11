@@ -28,8 +28,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config \
-          zlib1g-dev libffi-dev libssl-dev cmake ccache libncurses5 libstdc++6 \
-          libglu1-mesa libpulse0 libasound2
+          zlib1g-dev libffi-dev libssl-dev cmake ccache libstdc++6 \
+          libglu1-mesa libpulse0 libncursesw6
 
     - name: Install Buildozer and Cython
       run: |
