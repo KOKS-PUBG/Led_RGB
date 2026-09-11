@@ -1,46 +1,50 @@
-[app]
+name: Build APK
 
-# Название вашего приложения под иконкой на телефоне
-title = RGB LED CONTROL
+on:
+  push:
+    branches: [ main, master ]
 
-# Системное имя пакета (только латиница и цифры, без пробелов)
-package.name = myledapp
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-# Домен пакета
-package.domain = org.led
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-# Директория с исходным кодом
-source.dir = .
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
 
-# Расширения файлов проекта
-source.include_exts = py,png,jpg,kv,atlas
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
 
-# Версия приложения
-version = 1.0
+    - name: Install Buildozer dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config \
+          zlib1g-dev libffi-dev libssl-dev cmake ccache libstdc++6 \
+          libglu1-mesa libpulse0 libncursesw6
 
-# Необходимые библиотеки (включая bleak для Bluetooth)
-requirements = python3,kivy,bleak,android,pyjnius
+    - name: Install Buildozer and Cython
+      run: |
+        pip install --upgrade pip
+        pip install --upgrade buildozer cython==0.29.36
 
-# Ориентация экрана (portrait - портретная, landscape - ландшафтная)
-orientation = portrait
+    - name: Build with Buildozer
+      run: |
+        buildozer -v android debug
+      env:
+        # Отключаем автозагрузку чужих NDK, используем ту версию, что укажем или скачаем
+        BUILDER_NDK_VERSION: "25b"
 
-# Поддерживаемые архитектуры процессоров
-android.archs = arm64-v8a
-
-# Разрешения для работы с Bluetooth
-android.permissions = BLUETOOTH, BLUETOOTH_ADMIN, BLUETOOTH_SCAN, BLUETOOTH_CONNECT, ACCESS_FINE_LOCATION
-
-# Версии Android SDK, NDK и API
-android.api = 33
-android.minapi = 21
-android.sdk = 33
-android.ndk = 25b
-android.accept_sdk_license = True
-
-[buildozer]
-
-# Уровень вывода логов (2 для подробной отладки)
-log_level = 2
-
-# Режим предупреждений
-warn_on_root = 1
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk
+        path: bin/*.apk
