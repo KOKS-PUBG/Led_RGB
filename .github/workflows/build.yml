@@ -39,6 +39,9 @@ jobs:
     - name: Build with Buildozer
       run: |
         buildozer -v android debug
+      env:
+        # Отключаем автозагрузку чужих NDK, используем ту версию, что укажем или скачаем
+        BUILDER_NDK_VERSION: "25b"
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
